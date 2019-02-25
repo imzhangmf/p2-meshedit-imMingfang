@@ -25,42 +25,68 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2019</h1>
 <h1 align="middle">Project 2: Mesh Editor</h1>
-<h2 align="middle">YOUR NAME</h2>
+<h2 align="middle">Mingfang Zhang</h2>
 
 <br><br>
 
 <div>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+<p>In this assignment, I built Bezier curves and surfaces using de Casteljau's algorithm, manipulated half-edge meshes, and implemented loop subdivision!</p>
 
 <h2 align="middle">Section I: Bezier Curves and Surfaces</h2>
 
 <h3 align="middle">Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
 
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
+<h4>1-1</h4>
+
+<p>The algorithm allows us to create a smooth Bezier curve from a series of control points. To implement it, I get the last level of control points from <code>evaluatedLevels</code>, and use <code>lerp(t)</code> to find the next level's control points. When there is only one control point <code>P</code>, we can stop looping, and remember the point's location. Then we change t from 0 to 1, to get a series of  <code>P</code>, to create a smooth Bezier curve.</p>
+
+<h4>1-2, 1-3, 1-4</h4>
 
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/image1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/1-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 0</figcaption>
       </td>
       <td>
-        <img src="images/image2.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/1-2.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 1</figcaption>
+      </td>
+      <td>
+        <img src="images/1-3.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 2</figcaption>
       </td>
     </tr>
     <br>
     <tr>
       <td>
-        <img src="images/image3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/1-4.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 3</figcaption>
       </td>
       <td>
-        <img src="images/image4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/1-5.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 4</figcaption>
+      </td>
+      <td>
+        <img src="images/1-6.png" align="middle" width="100%"/>
+        <figcaption align="middle">Level 5</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/1-7.png" align="middle" width="100%"/>
+        <figcaption align="middle">Move control points</figcaption>
+      </td>
+      <td>
+        <img src="images/1-8.png" align="middle" width="100%"/>
+        <figcaption align="middle">Change t</figcaption>
+      </td>
+      <td>
+        <img src="images/1-9.png" align="middle" width="100%"/>
+        <figcaption align="middle">Change t</figcaption>
       </td>
     </tr>
   </table>
@@ -69,25 +95,204 @@
 
 <h3 align="middle">Part 2: Bezier surfaces with separable 1D de Casteljau subdivision</h3>
 
+<h4>2-1</h4>
 
+<p>To extend the algorithm to Bezier surfaces, we got 4 row control points * 4 column control points, and a relative coordinate (u,v), u,v are in [0,1], and I use 4 control points and u to get a approperate point 4 times by applying the part 1 algorithm with 3 steps. Now I have 4 intermediate conntrol points, then I and use them with v to get the final point I want in the same way.</p>
+
+<p>To implement it, I built a <code>BezierPatch::evaluate1D()</code> first to get the approperate point from 4 control points and a t, then I use it 4+1 times in the <code>BezierPatch::evaluate()</code> to get the final point.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/2-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">Utah teapot</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 3: Average normals for half-edge meshes</h3>
 
+<h4>3-1</h4>
+
+<p>Input: A vertex; Output: A 3D vector of unit length that points to a proper direction according to the triangles around the vertex</p>
+
+<p>Algorithm: Use halfedge date structure to get the 3 vertex of every triangle around the vertex, and do a cross product to get a vector whose direction is vertical to the triangle surface and length is twice the area of the triangle. Then we add the vectors we get together and divide it by its length to get the output.</p>
+
+<h4>3-2</h4>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/3-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">Without smoothed normals</figcaption>
+      </td>
+      <td>
+        <img src="images/3-2.png" align="middle" width="100%"/>
+        <figcaption align="middle">With smoothed normals</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <h3 align="middle">Part 4: Half-edge flip</h3>
 
+<h4>4-1</h4>
+
+<p>Firstly, I get all the halfedges, vertexes and faces around the given edge. Then I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes and faces that are related to the flipping operation to get their proper halfedge.</p>
+
+<h4>4-2</h4>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/4-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">Flip edge with bug</figcaption>
+      </td>
+      <td>
+        <img src="images/4-2.png" align="middle" width="100%"/>
+        <figcaption align="middle">Flip edge without bug</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4>4-3</h4>
+
+<p>As is shown above, I once ran into a bug. The reason is that I didn't realised the flipping edge can also cause the change of the halfedges pointed by faces.</p>
 
 <h3 align="middle">Part 5: Half-edge split</h3>
+
+<h4>5-1</h4>
+
+<p>Firstly, I get all the halfedges, vertexes and faces around the given edge. Then I create all the new halfedges, edges, faces and a vertex using <code>newXXX()</code>  and compute the new vertex's position which should at the middle point of two opposite vertexes. Secondly, I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes, edges and faces that are related to the splitting operation to get their proper halfedge. Finally, I mark the new edges and vertexes and the old ones using <code>isNew</code> property for later use.</p>
+
+<h4>5-2</h4>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/5-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">Before splitting</figcaption>
+      </td>
+      <td>
+        <img src="images/5-2.png" align="middle" width="100%"/>
+        <figcaption align="middle">After splitting 2 edges</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4>5-3</h4>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/5-3.png" align="middle" width="100%"/>
+        <figcaption align="middle">After splitting, before flipping the red edge</figcaption>
+      </td>
+      <td>
+        <img src="images/5-4.png" align="middle" width="100%"/>
+        <figcaption align="middle">After splitting, after flipping the red edge</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4>5-4</h4>
+
+<p>I once assigned wrong halfedge to the new vertex, but the bug didn't show up until I implemented loop subdivision in part 6, which cost me a lot of time for finding bugs in part 6 before I realise the bug is in part 5...</p>
 
 
 <h3 align="middle">Part 6: Loop subdivision for mesh upsampling</h3>
 
-<h2 align="middle">Section III: Mesh Competition</h2>
-<p>If you are not participating in the optional mesh competition, don't worry about this section!</p>
+<h4>6-1</h4>
 
-<h3 align="middle">Part 7: Design your own mesh!</h3>
+<p>I implement loop subdivision following the basic strategy:
+1. Mark all vertices as belonging to the original mesh by setting Vertex::isNew to false for all vertices in the mesh.
+2. Compute updated positions for all vertices in the original mesh using the vertex subdivision rule, and store them in Vertex::newPosition.
+3. Compute new positions associated with the vertices that will be inserted at edge midpoints, and store them in Edge::newPosition.
+4. Split every edge in the mesh, being careful about how the loop is written. In particular, you should make sure to iterate only over edges of the original mesh. Otherwise, you will keep splitting edges that you just created!
+5. Flip any new edge that connects an old and new vertex.
+6. Finally, copy the new vertex positions (Vertex::newPosition) into the usual vertex positions (Vertex::position).</p>
+
+<h4>6-2</h4>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/6-1.png" align="middle" width="100%"/>
+        <figcaption align="middle">0</figcaption>
+      </td>
+      <td>
+        <img src="images/6-2.png" align="middle" width="100%"/>
+        <figcaption align="middle">1</figcaption>
+      </td>
+      <td>
+        <img src="images/6-3.png" align="middle" width="100%"/>
+        <figcaption align="middle">2</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/6-4.png" align="middle" width="100%"/>
+        <figcaption align="middle">3</figcaption>
+      </td>
+      <td>
+        <img src="images/6-5.png" align="middle" width="100%"/>
+        <figcaption align="middle">4</figcaption>
+      </td>
+      <td>
+        <img src="images/6-6.png" align="middle" width="100%"/>
+        <figcaption align="middle">5</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>Because loop subdivision surface is an approximating subdivision scheme, sharp corners and edges disappear. To lessen this effect, I need split first to have more triangles to describe the model, so I can keep more of the edge information after several approximating process, like below pictures showed.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/6-7.png" align="middle" width="100%"/>
+        <figcaption align="middle">More triangles to describe the model</figcaption>
+      </td>
+      <td>
+        <img src="images/6-8.png" align="middle" width="100%"/>
+        <figcaption align="middle">After approximating, the edge remains</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h4>6-3</h4>
+
+<p>In order to get the model subdivided symmetrically, we need symmetrical triangeles to start up, like the pictures below showed.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/6-9.png" align="middle" width="100%"/>
+        <figcaption align="middle">Symmetrical triangeles to start up</figcaption>
+      </td>
+      <td>
+        <img src="images/6-10.png" align="middle" width="100%"/>
+        <figcaption align="middle">Symmetrical model remains</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 </body>
 </html>
