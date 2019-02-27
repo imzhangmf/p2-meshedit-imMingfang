@@ -40,7 +40,18 @@
 
 <h4>1-1</h4>
 
-<p>The algorithm allows us to create a smooth Bezier curve from a series of control points. To implement it, I get the last level of control points from <code>evaluatedLevels</code>, and use <code>lerp(t)</code> to find the next level's control points. When there is only one control point <code>P</code>, we can stop looping, and remember the point's location. Then we change t from 0 to 1, to get a series of  <code>P</code>, to create a smooth Bezier curve.</p>
+<p>The algorithm allows us to create a smooth Bezier curve from a series of control points, and the picture below describes the algorithm vividly. To implement it, I get the last level of control points from <code>evaluatedLevels</code>, and use <code>lerp2D(t)</code> to find the next level's control points. When there is only one control point <code>P</code>, we can stop looping, and remember the point's location. Then we change t from 0 to 1, to get a series of  <code>P</code>, to create a smooth Bezier curve.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/1-a.png" align="middle" width="100%"/>
+        <figcaption align="middle">de Casteljau's algorithm</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <h4>1-2, 1-3, 1-4</h4>
 
@@ -97,7 +108,18 @@
 
 <h4>2-1</h4>
 
-<p>To extend the algorithm to Bezier surfaces, we got 4 row control points * 4 column control points, and a relative coordinate (u,v), u,v are in [0,1], and I use 4 control points and u to get a approperate point 4 times by applying the part 1 algorithm with 3 steps. Now I have 4 intermediate conntrol points, then I and use them with v to get the final point I want in the same way.</p>
+<p>To extend the algorithm to Bezier surfaces, like the picture showed below, we got 4 row control points * 4 column control points, and a relative coordinate (u,v), u,v are in [0,1], and I use 4 control points and u to get a approperate point 4 times by applying the part 1 algorithm with 3 steps. Now I have 4 intermediate conntrol points, then I and use them with v to get the final point I want in the same way.</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/2-a.png" align="middle" width="100%"/>
+        <figcaption align="middle">de Casteljau's algorithm for Bezier surfaces</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <p>To implement it, I built a <code>BezierPatch::evaluate1D()</code> first to get the approperate point from 4 control points and a t, then I use it 4+1 times in the <code>BezierPatch::evaluate()</code> to get the final point.</p>
 
@@ -128,6 +150,16 @@
   <table style="width=100%">
     <tr>
       <td>
+        <img src="images/3-a.png" align="middle" width="100%"/>
+        <figcaption align="middle">Without smoothed normals</figcaption>
+      </td>
+      <td>
+        <img src="images/3-b.png" align="middle" width="100%"/>
+        <figcaption align="middle">With smoothed normals</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
         <img src="images/3-1.png" align="middle" width="100%"/>
         <figcaption align="middle">Without smoothed normals</figcaption>
       </td>
@@ -143,7 +175,18 @@
 
 <h4>4-1</h4>
 
-<p>Firstly, I get all the halfedges, vertexes and faces around the given edge. Then I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes and faces that are related to the flipping operation to get their proper halfedge.</p>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/flip.png" align="middle" width="100%"/>
+        <figcaption align="middle">Utah teapot</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>To get the effect of the picture above, firstly, I get all the halfedges, vertexes and faces around the given edge. Then I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes and faces that are related to the flipping operation to get their proper halfedge.</p>
 
 <h4>4-2</h4>
 
@@ -170,7 +213,18 @@
 
 <h4>5-1</h4>
 
-<p>Firstly, I get all the halfedges, vertexes and faces around the given edge. Then I create all the new halfedges, edges, faces and a vertex using <code>newXXX()</code>  and compute the new vertex's position which should at the middle point of two opposite vertexes. Secondly, I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes, edges and faces that are related to the splitting operation to get their proper halfedge. Finally, I mark the new edges and vertexes and the old ones using <code>isNew</code> property for later use.</p>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/split.png" align="middle" width="100%"/>
+        <figcaption align="middle">Utah teapot</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>To get the effect of the picture above, firstly, I get all the halfedges, vertexes and faces around the given edge. Then I create all the new halfedges, edges, faces and a vertex using <code>newXXX()</code>  and compute the new vertex's position which should at the middle point of two opposite vertexes. Secondly, I use <code>setNeighbors()</code> to redefine what is related to each halfedge. Then I set all the vertexes, edges and faces that are related to the splitting operation to get their proper halfedge. Finally, I mark the new edges and vertexes and the old ones using <code>isNew</code> property for later use.</p>
 
 <h4>5-2</h4>
 
@@ -276,6 +330,10 @@
 </div>
 
 <h4>6-3</h4>
+
+<p>The cube.dae becomes slightly asymmetric after repeated subdivision steps, like the picture I showed in 6-2, so I won't put the same pictures here.</p>
+
+<p>The reason why it becomes asymmetric is that before subdivision, the cube is discribed by triangles that are not placed symmetrically.</p>
 
 <p>In order to get the model subdivided symmetrically, we need symmetrical triangeles to start up, like the pictures below showed.</p>
 
